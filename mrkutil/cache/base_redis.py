@@ -45,7 +45,7 @@ class RedisBase(object):
         if isinstance(data, dict):
             data = json.dumps(data)
 
-        self._setData("{}_{}".format(self._key, key), data)
+        return self._setData("{}_{}".format(self._key, key), data)
 
     def delete(self, key):
-        self._delData("{}_{}".format(self._key, key))
+        return self._delData("{}_{}".format(self._key, key))
