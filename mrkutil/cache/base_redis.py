@@ -49,3 +49,12 @@ class RedisBase(object):
 
     def delete(self, key):
         return self._delData("{}_{}".format(self._key, key))
+
+    def search(self, pattern: str):
+        return self.server.keys(pattern=pattern)
+
+    def delete_keys(self, pattern: str):
+        keys = self.search(pattern)
+        for key in keys:
+            self.delete(key)
+        return len(keys)
