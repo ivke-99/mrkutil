@@ -52,8 +52,10 @@ class ResponseHelper(object):
     }
 
     @classmethod
-    def get_response(cls, code, message=None, errors=None):
-        new_message = message or cls.RESPONSES.get(str(code), "Default message")
+    def get_response(cls, code, message=None, errors=None, avoid_empty=False):
+        new_message = message
+        if not avoid_empty and not message:
+            new_message = cls.RESPONSES.get(str(code), "Default message")
         data = {
             "code": code,
             "response": {
