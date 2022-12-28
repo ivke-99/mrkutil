@@ -42,8 +42,8 @@ setup(
     author_email="mrkic.nebojsa@gmail.com",
     license="Apache 2.0",
     install_requires=[
-        "sqlalchemy>=1.4",
-        "redis>=4.3",
+        # "sqlalchemy>=1.4",
+        # "redis>=4.3",
         "RabbitMQPubSub>=0.1.5"
     ],
     dependency_links=[
