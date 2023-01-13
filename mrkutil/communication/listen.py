@@ -14,15 +14,16 @@ class Subscriber():
     def handle(self, body=None):
         response = None
         try:
-            response = BaseHandler.process_data(body['data'], body['meta']['correlationId'])
+            if isinstance(body, dict) and body.get("data", {}).get("method"):
+                response = BaseHandler.process_data(body['data'], body['meta']['correlationId'])
 
-            trigger_service(
-                request_data=response,
-                destination=body['meta']['source'],
-                source=self.exchange,
-                corr_id=body['meta']['correlationId']
-            )
-            return True
+                trigger_service(
+                    request_data=response,
+                    destination=body['meta']['source'],
+                    source=self.exchange,
+                    corr_id=body['meta']['correlationId']
+                )
+                return True
 
         except Exception as e:
             logger.exception("error parsing received message {}".format(str(e)))
