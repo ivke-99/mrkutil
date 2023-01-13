@@ -14,7 +14,7 @@ class Subscriber():
     def handle(self, body=None):
         response = None
         try:
-            if isinstance(body, dict) and body.get("data", {}).get("method"):
+            if isinstance(body.get("data", False), dict) and body.get("data", {}).get("method"):
                 response = BaseHandler.process_data(body['data'], body['meta']['correlationId'])
 
                 trigger_service(
