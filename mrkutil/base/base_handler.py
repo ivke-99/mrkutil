@@ -27,4 +27,4 @@ class BaseHandler(object):
         if handler:
             return handler().process(data, corr_id)
         logger.warning("No handler covering this method, method: {}".format(data.get('method', "Empty")))
-        return False
+        return {"code": 404, "message": "Method not found"}
