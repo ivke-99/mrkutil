@@ -49,7 +49,7 @@ class RedisBase(object):
         data = self._getMultiple(keys)
         try:
             if data:
-                data = [json.loads(x) for x in data]
+                data = [json.loads(x) for x in data if x is not None]
         except Exception as e:
             logger.warn("Stored data is not dictionary. Exception: {}".format(str(e)))
             pass
