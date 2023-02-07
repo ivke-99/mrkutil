@@ -66,7 +66,7 @@ class RedisBase(object):
 
     def search(self, pattern: str):
         keys = self.server.keys(pattern=self._key+"_"+pattern)
-        return [(x.decode("utf-8")).strip(self._key) for x in keys]
+        return [(x.decode("utf-8")).replace(self._key + "_", "") for x in keys]
 
     def delete_keys(self, pattern: str):
         keys = self.search(pattern)
