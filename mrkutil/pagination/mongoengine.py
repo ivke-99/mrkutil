@@ -1,3 +1,5 @@
+import random
+
 def paginate_mongo(
     query,
     page_number: int = None,
@@ -24,8 +26,11 @@ def paginate_mongo(
     from_pag = (page_number - 1) * page_size
     to_pag = (page_number - 1) * page_size + page_size
 
+    items = [k.to_dict() for k in query[from_pag:to_pag].all()]
+    if direction == "rand":
+        items = random.shuffle(items)
     return {
-        "items": [k.to_dict() for k in query[from_pag:to_pag].all()],
+        "items": items,
         "page": page_number,
         "size": page_size,
         "total": total_results
