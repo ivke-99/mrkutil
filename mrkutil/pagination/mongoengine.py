@@ -28,7 +28,7 @@ def paginate_mongo(
 
     items = [k.to_dict() for k in query[from_pag:to_pag].all()]
     if direction == "rand":
-        items = random.shuffle(items)
+        random.shuffle(items)
     return {
         "items": items,
         "page": page_number,
