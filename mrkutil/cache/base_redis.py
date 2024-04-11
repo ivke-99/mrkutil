@@ -6,18 +6,24 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class RedisBase(object):
+class RedisBase:
     """Data structure store
 
-       Redis is used as database, for saving and reading messages
-       received from other services.
-    """
-    _key = ""
-    # set default timeout to 1 day
-    _cache_timeout = 60*60*24
+    RedisBase is a class that provides methods for storing and retrieving data
+    using Redis as the underlying database. It allows saving and reading messages
+    received from other services.
 
-    def __init__(self):
+    Attributes:
+        server (redis.Redis): The Redis server instance.
+        _key (str): The key prefix used for storing data.
+        _cache_timeout (int): The cache timeout value in seconds.
+
+    """
+
+    def __init__(self, key="", cache_timeout=86400):
         self.server = redis.Redis(os.getenv("REDIS_HOST"))
+        self._key = key
+        self._cache_timeout = cache_timeout
 
     def _setData(self, key, data):
         if self._cache_timeout:
@@ -65,7 +71,7 @@ class RedisBase(object):
         return self._delData("{}_{}".format(self._key, key))
 
     def search(self, pattern: str):
-        keys = self.server.keys(pattern=self._key+"_"+pattern)
+        keys = self.server.keys(pattern=self._key + "_" + pattern)
         return [(x.decode("utf-8")).replace(self._key + "_", "") for x in keys]
 
     def delete_keys(self, pattern: str):

@@ -1,4 +1,4 @@
-class ResponseHelper(object):
+class ServiceResponse:
     RESPONSES = {
         "100": "Continue",
         "101": "Switching Protocols",
@@ -51,17 +51,26 @@ class ResponseHelper(object):
         "511": "Network Authentication Required",
     }
 
-    @classmethod
-    def get_response(cls, code, message=None, errors=None, avoid_empty=False):
+    def __init__(
+        self, code: int, message=None, errors: list = None, avoid_empty: bool = False
+    ):
+        """
+        Initializes a new instance of the ResponseHelper class.
+
+        Args:
+            code (int): The response code.
+            message (str, optional): The response message. If not provided, a default message will be used based on the code.
+            errors (list, optional): A list of error messages.
+            avoid_empty (bool, optional): If True, the message will not be overridden with a default message if it is empty.
+
+        Returns:
+            dict: The response data.
+
+        """
         new_message = message
         if not avoid_empty and not message:
-            new_message = cls.RESPONSES.get(str(code), "Default message")
-        data = {
-            "code": code,
-            "response": {
-                "message": new_message
-            }
-        }
+            new_message = self.RESPONSES.get(str(code), "Default message")
+        data = {"code": code, "response": {"message": new_message}}
         if errors:
             data["response"]["errors"] = errors
         if not isinstance(new_message, str):

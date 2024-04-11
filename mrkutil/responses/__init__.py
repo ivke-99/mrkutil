@@ -1,6 +1,4 @@
-from .response_helper import ResponseHelper
+from .response_helper import ServiceResponse
 
 
-__all__ = [
-    "ResponseHelper"
-]
+__all__ = ["ServiceResponse"]

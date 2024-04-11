@@ -7,21 +7,49 @@ import os
 logger = logging.getLogger(__name__)
 
 
-class Subscriber():
+class Subscriber:
+    """
+    Represents a subscriber that handles incoming messages.
+
+    Args:
+        exchange (str): The exchange name.
+
+    Attributes:
+        exchange (str): The exchange name.
+
+    Methods:
+        handle: Handles the incoming message.
+
+    """
+
     def __init__(self, exchange):
         self.exchange = exchange
 
     def handle(self, body=None):
+        """
+        Handles the incoming message.
+
+        Args:
+            body (dict): The message body.
+
+        Returns:
+            bool: True if the message was successfully handled, False otherwise.
+
+        """
         response = None
         try:
-            if isinstance(body.get("data", False), dict) and body.get("data", {}).get("method"):
-                response = BaseHandler.process_data(body['data'], body['meta']['correlationId'])
+            if isinstance(body.get("data", False), dict) and body.get("data", {}).get(
+                "method"
+            ):
+                response = BaseHandler.process_data(
+                    body["data"], body["meta"]["correlationId"]
+                )
                 if response:
                     trigger_service(
                         request_data=response,
-                        destination=body['meta']['source'],
+                        destination=body["meta"]["source"],
                         source=self.exchange,
-                        corr_id=body['meta']['correlationId']
+                        corr_id=body["meta"]["correlationId"],
                     )
                 return True
         except Exception as e:
@@ -31,12 +59,21 @@ class Subscriber():
 
 
 def listen(exchange, exchange_type, queue, async_processing=True):
+    """
+    Listens for messages on a RabbitMQ exchange and processes them asynchronously if wanted.
+
+    Args:
+        exchange (str): The name of the RabbitMQ exchange to listen on.
+        exchange_type (str): The type of the RabbitMQ exchange.
+        queue (str): The name of the RabbitMQ queue to bind to the exchange.
+        async_processing (bool, optional): Whether to process messages asynchronously. Defaults to True.
+    """
     subscriber = rabbit_pubsub.Subscriber(
         amqp_url=os.getenv("RABBIT_URL"),
         exchange=exchange,
         exchange_type=exchange_type,
         queue=queue,
-        async_processing=async_processing
+        async_processing=async_processing,
     )
     subscriber.subscribe(Subscriber(exchange))
     subscriber.start()

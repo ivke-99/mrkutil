@@ -1,12 +1,26 @@
 import random
 
-def paginate_mongo(
+
+def paginate(
     query,
     page_number: int = None,
     page_size: int = None,
     direction: str = None,
-    sort_by: str = None
+    sort_by: str = None,
 ):
+    """
+    Paginates a MongoDB query result.
+
+    Args:
+        query: The MongoDB query.
+        page_number (int, optional): The page number to retrieve. Defaults to None.
+        page_size (int, optional): The number of items per page. Defaults to None.
+        direction (str, optional): The direction to sort the items. Defaults to None.
+        sort_by (str, optional): The field to sort the items by. Defaults to None.
+
+    Returns:
+        dict: A dictionary containing the paginated items, page number, page size, and total results.
+    """
     total_results = query.count()
 
     query = _sort_by(query, direction, sort_by)
@@ -33,7 +47,7 @@ def paginate_mongo(
         "items": items,
         "page": page_number,
         "size": page_size,
-        "total": total_results
+        "total": total_results,
     }
 
 

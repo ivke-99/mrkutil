@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 def random_string(length):
-    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
+    return "".join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
 
 def random_uuid():

@@ -1,0 +1,37 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "mrkutil"
+dependencies = ["RabbitMQPubSub>=1.0.0"]
+authors = [{ name = "Nebojsa Mrkic", email = "mrkic.nebojsa@gmail.com" }]
+readme = "README.md"
+license = { file = "LICENSE" }
+classifiers = ['License :: OSI Approved :: Apache Software License']
+dynamic = ["version", "description"]
+
+[project.urls]
+Home = "https://github.com/ivke-99/mrkutil"
+
+[project.optional-dependencies]
+extras = ["redis>=4.3", "sqlalchemy>=1.4"]
+tests = [
+    "pytest",
+    "mock",
+    "requests",
+    "pytest-runner",
+    "pre-commit",
+    "pytest-mock",
+]
+
+[tool.coverage.run]
+source = ["./mrkutil"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+exclude_lines = ["pragma: no cover"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
