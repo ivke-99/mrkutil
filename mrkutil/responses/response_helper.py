@@ -51,8 +51,8 @@ class ServiceResponse:
         "511": "Network Authentication Required",
     }
 
-    def __init__(
-        self, code: int, message=None, errors: list = None, avoid_empty: bool = False
+    def __new__(
+        cls, code: int, message=None, errors: list = None, avoid_empty: bool = False
     ):
         """
         Initializes a new instance of the ResponseHelper class.
@@ -69,7 +69,7 @@ class ServiceResponse:
         """
         new_message = message
         if not avoid_empty and not message:
-            new_message = self.RESPONSES.get(str(code), "Default message")
+            new_message = cls.RESPONSES.get(str(code), "Default message")
         data = {"code": code, "response": {"message": new_message}}
         if errors:
             data["response"]["errors"] = errors
