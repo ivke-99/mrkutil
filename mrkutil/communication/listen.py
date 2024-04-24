@@ -1,6 +1,7 @@
 from rabbitmqpubsub import rabbit_pubsub
 from mrkutil.base import BaseHandler
 from .trigger_service import trigger_service
+from mrkutil.responses import ServiceResponse
 import logging
 import os
 
@@ -37,10 +38,11 @@ class Subscriber:
 
         """
         response = None
+        method_exists = isinstance(body.get("data", False), dict) and body.get(
+            "data", {}
+        ).get("method")
         try:
-            if isinstance(body.get("data", False), dict) and body.get("data", {}).get(
-                "method"
-            ):
+            if method_exists:
                 response = BaseHandler.process_data(
                     body["data"], body["meta"]["correlationId"]
                 )
@@ -54,7 +56,20 @@ class Subscriber:
                 return True
         except Exception as e:
             logger.exception("error parsing received message {}".format(str(e)))
-
+            if method_exists:
+                destination = body.get("meta", {}).get("source")
+                if destination:
+                    corr_id = body.get("meta", {}).get("correlationId")
+                    method = body.get("data", {}).get("method")
+                    trigger_service(
+                        request_data=ServiceResponse(
+                            code=500,
+                            message=f"Service issue with corr id: {corr_id}, method {method} and service {self.exchange}, called by {destination}",
+                        ),
+                        destination=destination,
+                        source=self.exchange,
+                        corr_id=corr_id,
+                    )
         return False
 
 
