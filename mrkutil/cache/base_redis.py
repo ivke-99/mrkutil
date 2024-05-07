@@ -22,7 +22,7 @@ class RedisBase:
     """
 
     def __init__(self, key="", cache_timeout=86400):
-        self.server = redis.Redis(os.getenv("REDIS_HOST"))
+        self.server = redis.Redis(host=os.getenv("REDIS_HOST"))
         self._key = key
         self._cache_timeout = cache_timeout
 
@@ -97,7 +97,7 @@ class AsyncRedisBase:
     """
 
     def __init__(self, key="", cache_timeout=86400):
-        self.server = aredis.Redis(os.getenv("REDIS_HOST"))
+        self.server = aredis.Redis(host=os.getenv("REDIS_HOST"))
         self._key = key
         self._cache_timeout = cache_timeout
 
