@@ -1,4 +1,4 @@
-from .base_redis import RedisBase
+from .base_redis import RedisBase, AsyncRedisBase
 
 
-__all__ = ["RedisBase"]
+__all__ = ["RedisBase", "AsyncRedisBase"]
