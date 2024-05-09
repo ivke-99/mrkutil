@@ -1,11 +1,22 @@
+from typing import Optional
+from sqlalchemy import select, func, desc, Select, inspect, asc
+from sqlalchemy.orm import Session
+
+
 def paginate(
-    query,
+    query: Select,
+    session: Session,
+    recurse: bool = True,
     page_number: int = None,
     page_size: int = None,
     direction: str = None,
     sort_by: str = None,
 ):
     """Apply pagination to a SQLAlchemy query object.
+    :param query:
+        SQLAlchemy Select object.
+    :param session:
+        SQLAlchemy Session object.
     :param page_number:
         Page to be returned (starts and defaults to 1).
     :param page_size:
@@ -16,12 +27,12 @@ def paginate(
     :param sort_by:
         Column for sorting
     :returns:
-        A dict with items(sqlalchemy objects converted to dict),
+        A dict with items (SQLAlchemy objects converted to dict),
         page number, desired page size, total number of results
     Basic usage::
-        object = paginate(query, 1, 10, "asc", "email")
+        object = paginate(select([User]), session, 1, 10, "asc", "email")
     """
-    total_results = query.count()
+    total_results = session.scalar(select(func.count()).select_from(query.subquery()))
 
     query = _sort_by(query, direction, sort_by)
 
@@ -43,15 +54,17 @@ def paginate(
     if page_number is None:
         page_number = 1
 
+    results = session.scalars(query).all()
+
     return {
-        "items": [k._asdict() for k in query.all()],
+        "items": [k.to_dict(recurse=recurse) for k in results],
         "page": page_number,
         "size": page_size,
         "total": total_results,
     }
 
 
-def _limit(query, page_size):
+def _limit(query: Select, page_size: Optional[int]) -> Select:
     if page_size is not None:
         if page_size < 0:
             raise Exception("Page size should not be negative: {}".format(page_size))
@@ -61,7 +74,9 @@ def _limit(query, page_size):
     return query
 
 
-def _offset(query, page_number, page_size):
+def _offset(
+    query: Select, page_number: Optional[int], page_size: Optional[int]
+) -> Select:
     if page_number is not None:
         if page_number < 1:
             raise Exception("Page number should be positive: {}".format(page_number))
@@ -71,19 +86,19 @@ def _offset(query, page_number, page_size):
     return query
 
 
-def _sort_by(query, direction, sort_by):
+def _sort_by(query: Select, direction: Optional[str], sort_by: Optional[str]) -> Select:
     """
-    If None is passed to sqlalchemy order_by, it will do default sorting
-    This way we are allowing sorting by ascending/descending without a specified
-    sort by parameter
+    Sorts query by a specific column in ascending or descending order,
+    after verifying that the column exists.
     """
-    # check if sort by exists in columns otherwise default it to None
-    if sort_by not in query.statement.columns.keys():
-        sort_by = None
-    if direction == "desc":
-        from sqlalchemy import desc
+    if sort_by:
+        columns = [column.key for column in inspect(query).c]
+        if sort_by not in columns:
+            sort_by = None
 
+    if sort_by and direction == "desc":
         query = query.order_by(desc(sort_by))
-    else:
-        query = query.order_by(sort_by)
+    elif sort_by and direction == "asc":
+        query = query.order_by(asc(sort_by))
+
     return query
