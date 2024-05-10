@@ -164,7 +164,7 @@ class AsyncRedisBase:
         return [(x.decode("utf-8")).replace(self._key + "_", "") for x in keys]
 
     async def delete_keys(self, pattern: str):
-        keys = self.search(pattern)
+        keys = await self.search(pattern)
         for key in keys:
             await self.delete(key)
         return len(keys)
