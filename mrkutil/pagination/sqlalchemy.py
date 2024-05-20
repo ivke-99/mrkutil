@@ -92,7 +92,7 @@ def _sort_by(query: Select, direction: Optional[str], sort_by: Optional[str]) ->
     after verifying that the column exists.
     """
     if sort_by:
-        columns = [column.key for column in inspect(query).c]
+        columns = [column.key for column in inspect(query).selected_columns]
         if sort_by not in columns:
             sort_by = None
 

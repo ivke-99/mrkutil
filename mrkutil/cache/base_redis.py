@@ -108,9 +108,9 @@ class AsyncRedisBase:
         try:
             loop = asyncio.get_event_loop()
             if loop.is_running():
-                loop.create_task(self.server.close())
+                loop.create_task(self.server.aclose())
             else:
-                loop.run_until_complete(self.server.close())
+                loop.run_until_complete(self.server.aclose())
         except Exception:
             pass
 
