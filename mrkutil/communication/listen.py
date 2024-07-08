@@ -73,7 +73,7 @@ class Subscriber:
         return False
 
 
-def listen(exchange, exchange_type, queue, async_processing=True):
+def listen(exchange, exchange_type, queue, async_processing=True, max_threads=10):
     """
     Listens for messages on a RabbitMQ exchange and processes them asynchronously if wanted.
 
@@ -89,6 +89,7 @@ def listen(exchange, exchange_type, queue, async_processing=True):
         exchange_type=exchange_type,
         queue=queue,
         async_processing=async_processing,
+        max_threads=max_threads,
     )
     subscriber.subscribe(Subscriber(exchange))
     subscriber.start()
