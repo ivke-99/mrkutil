@@ -91,9 +91,9 @@ def _sort_by(query: Select, direction: Optional[str], sort_by: Optional[str]) ->
     Sorts query by a specific column in ascending or descending order,
     after verifying that the column exists.
     """
+    match = False
     if sort_by:
         sorting_value = None
-        match = False
         columns = inspect(query).selected_columns
         for item in columns:
             if sort_by == item.key:
