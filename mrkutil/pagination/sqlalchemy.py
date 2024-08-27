@@ -92,13 +92,16 @@ def _sort_by(query: Select, direction: Optional[str], sort_by: Optional[str]) ->
     after verifying that the column exists.
     """
     if sort_by:
-        columns = [column.key for column in inspect(query).selected_columns]
-        if sort_by not in columns:
-            sort_by = None
-
-    if sort_by and direction == "desc":
-        query = query.order_by(desc(sort_by))
-    elif sort_by and direction == "asc":
-        query = query.order_by(asc(sort_by))
-
+        sorting_value = None
+        match = False
+        columns = inspect(query).selected_columns
+        for item in columns:
+            if sort_by == item.key:
+                match = True
+                sorting_value = item
+    if match:
+        if direction == "desc":
+            query = query.order_by(desc(sorting_value))
+        else:
+            query = query.order_by(asc(sorting_value))
     return query
