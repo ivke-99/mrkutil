@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy import select, func, desc, Select, inspect, asc
+from sqlalchemy import select, func, desc, Select, inspect, asc, RowMapping
 from sqlalchemy.orm import Session
 
 
@@ -11,6 +11,8 @@ def paginate(
     page_size: int = None,
     direction: str = None,
     sort_by: str = None,
+    format_to_dict: bool = True,
+    use_scalars: bool = True,
 ):
     """Apply pagination to a SQLAlchemy query object.
     :param query:
@@ -19,6 +21,9 @@ def paginate(
         SQLAlchemy Session object.
     :param page_number:
         Page to be returned (starts and defaults to 1).
+    :param recurse:
+        DEPRECATED
+        to_dict implemented recursion in the past, this will not be supported soon.
     :param page_size:
         Maximum number of results to be returned in the page (defaults
         to the total results).
@@ -26,8 +31,14 @@ def paginate(
         Direction of ordering, asc or desc
     :param sort_by:
         Column for sorting
+    :param format_to_dict:
+        DEPRECATED
+        Wether to use to_dict method or not. Will be removed soon
+    :param use_scalars:
+        Wether to use mappings or sqlalchemy scalars method. If you
+        are paginating a non-model query you will usually have to set this to False
     :returns:
-        A dict with items (SQLAlchemy objects converted to dict),
+        A dict with items (SQLAlchemy objects or dictionary objects),
         page number, desired page size, total number of results
     Basic usage::
         object = paginate(select([User]), session, 1, 10, "asc", "email")
@@ -53,11 +64,18 @@ def paginate(
     # Page number defaults to 1
     if page_number is None:
         page_number = 1
+    if use_scalars:
+        results = session.scalars(query).all()
+    else:
+        results = session.execute(query).mappings().all()
 
-    results = session.scalars(query).all()
-
+    if format_to_dict:
+        if results and isinstance(results[0], RowMapping):
+            results = [dict(k) for k in results]
+        else:
+            results = [k.to_dict(recurse=recurse) for k in results]
     return {
-        "items": [k.to_dict(recurse=recurse) for k in results],
+        "items": results,
         "page": page_number,
         "size": page_size,
         "total": total_results,
