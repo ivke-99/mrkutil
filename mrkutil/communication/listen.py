@@ -23,8 +23,9 @@ class Subscriber:
 
     """
 
-    def __init__(self, exchange):
+    def __init__(self, exchange, on_message_process_complete=None):
         self.exchange = exchange
+        self.on_message_process_complete = on_message_process_complete
 
     def handle(self, body=None):
         """
@@ -70,10 +71,23 @@ class Subscriber:
                         source=self.exchange,
                         corr_id=corr_id,
                     )
+        finally:
+            try:
+                if self.on_message_process_complete:
+                    self.on_message_process_complete()
+            except Exception as e:
+                logger.error(f"On message complete failed. Error {e}")
         return False
 
 
-def listen(exchange, exchange_type, queue, async_processing=True, max_threads=10):
+def listen(
+    exchange,
+    exchange_type,
+    queue,
+    async_processing=True,
+    max_threads=10,
+    on_message_process_complete=None,
+):
     """
     Listens for messages on a RabbitMQ exchange and processes them asynchronously if wanted.
 
@@ -91,6 +105,6 @@ def listen(exchange, exchange_type, queue, async_processing=True, max_threads=10
         async_processing=async_processing,
         max_threads=max_threads,
     )
-    subscriber.subscribe(Subscriber(exchange))
+    subscriber.subscribe(Subscriber(exchange, on_message_process_complete))
     subscriber.start()
     subscriber.join()
