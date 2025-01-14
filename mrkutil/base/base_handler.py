@@ -12,9 +12,16 @@ class BaseHandler(metaclass=abc.ABCMeta):
     This class defines the interface for handlers and provides a method for processing data.
     Subclasses must implement the `name` and `process` methods.
     """
+    sub_classes = {}
+
+    @classmethod
+    def initialize(cls):
+        for sub_cls in cls.__subclasses__():
+            if sub_cls.name():
+                cls.sub_classes[sub_cls.name()] = sub_cls
 
     @abc.abstractmethod
-    def name(cls):
+    def name():
         """
         Get the name of the handler.
 
@@ -49,14 +56,15 @@ class BaseHandler(metaclass=abc.ABCMeta):
         Returns:
             dict: The result of the processing.
         """
+
+        # Initialize subl class list on the first use
+        if not cls.sub_classes:
+            cls.initialize()
+
         logger.info(f"process_data method: {data.get('method')}")
-        handler = None
-        for sub_cls in cls.__subclasses__():
-            if data.get("method") == sub_cls.name():
-                handler = sub_cls
-                break
-        logger.info(f"process_data found method {handler}")
+        handler = cls.sub_classes.get(data.get('method', ""), None)
         if handler:
+            logger.info(f"process_data found method {handler}")
             return handler().process(data, corr_id)
         logger.warning(f"No handler covering this method, method: {data.get('method')}")
         return ServiceResponse(code=404, message="Method not found.")
