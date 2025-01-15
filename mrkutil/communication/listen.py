@@ -23,8 +23,8 @@ class Subscriber:
 
     """
 
-    def __init__(self, exchange, on_message_process_complete=None, base_handler=None):
-        self.base_handler = base_handler if base_handler else BaseHandler
+    def __init__(self, exchange, on_message_process_complete=None, base_handler=BaseHandler):
+        self.base_handler = base_handler
         self.exchange = exchange
         self.on_message_process_complete = on_message_process_complete
 
