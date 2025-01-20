@@ -23,8 +23,13 @@ class Subscriber:
 
     """
 
-    def __init__(self, exchange, on_message_process_complete=None, base_handler=BaseHandler):
-        self.base_handler = base_handler
+    def __init__(self, exchange, on_message_process_complete=None, base_handler=None):
+        if base_handler:
+            if not isinstance(base_handler, type):
+                raise Exception("Service handler must be a class")
+            if not issubclass(base_handler, BaseHandler):
+                raise Exception("Service handler must be a derivate of BaseHandler")
+        self.base_handler = base_handler if base_handler else BaseHandler
         self.exchange = exchange
         self.on_message_process_complete = on_message_process_complete
 
