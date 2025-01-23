@@ -23,7 +23,13 @@ class Subscriber:
 
     """
 
-    def __init__(self, exchange, on_message_process_complete=None):
+    def __init__(self, exchange, on_message_process_complete=None, base_handler=None):
+        if base_handler:
+            if not isinstance(base_handler, type):
+                raise Exception("Service handler must be a class")
+            if not issubclass(base_handler, BaseHandler):
+                raise Exception("Service handler must be a derivate of BaseHandler")
+        self.base_handler = base_handler if base_handler else BaseHandler
         self.exchange = exchange
         self.on_message_process_complete = on_message_process_complete
 
@@ -44,7 +50,7 @@ class Subscriber:
         ).get("method")
         try:
             if method_exists:
-                response = BaseHandler.process_data(
+                response = self.base_handler.process_data(
                     body["data"], body["meta"]["correlationId"]
                 )
                 if response:
@@ -87,6 +93,7 @@ def listen(
     async_processing=True,
     max_threads=10,
     on_message_process_complete=None,
+    base_handler=None
 ):
     """
     Listens for messages on a RabbitMQ exchange and processes them asynchronously if wanted.
@@ -105,6 +112,6 @@ def listen(
         async_processing=async_processing,
         max_threads=max_threads,
     )
-    subscriber.subscribe(Subscriber(exchange, on_message_process_complete))
+    subscriber.subscribe(Subscriber(exchange, on_message_process_complete, base_handler=base_handler))
     subscriber.start()
     subscriber.join()
