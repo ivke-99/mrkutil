@@ -4,7 +4,17 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "mrkutil"
+<<<<<<< Updated upstream
 dependencies = ["RabbitMQPubSub>=1.3.0"]
+||||||| Stash base
+requires-python = ">=3.12"
+dependencies = ["RabbitMQPubSub>=1.3.0"]
+=======
+requires-python = ">=3.12"
+dependencies = [
+    "rabbitmqpubsub==1.3.2",
+]
+>>>>>>> Stashed changes
 authors = [{ name = "Nebojsa Mrkic", email = "mrkic.nebojsa@gmail.com" }]
 readme = "README.md"
 license = { file = "LICENSE" }
