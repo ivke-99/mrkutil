@@ -1,3 +1,4 @@
+import dataclasses
 from typing import Optional
 from sqlalchemy import select, func, desc, Select, inspect, asc, RowMapping
 from sqlalchemy.orm import Session
@@ -152,7 +153,7 @@ async def apaginate(
         if results and isinstance(results[0], RowMapping):
             results = [dict(k) for k in results]
         else:
-            results = [k.to_dict(recurse=recurse) for k in results]
+            results = [dataclasses.asdict(k) for k in results]
     return {
         "items": results,
         "page": page_number,
