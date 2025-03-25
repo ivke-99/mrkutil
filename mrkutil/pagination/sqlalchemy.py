@@ -83,6 +83,7 @@ def paginate(
         "total": total_results,
     }
 
+
 async def apaginate(
     query: Select,
     session: AsyncSession,
@@ -123,7 +124,9 @@ async def apaginate(
     Basic usage::
         object = paginate(select([User]), session, 1, 10, "asc", "email")
     """
-    total_results = await session.scalar(select(func.count()).select_from(query.subquery()))
+    total_results = await session.scalar(
+        select(func.count()).select_from(query.subquery())
+    )
     query = _sort_by(query, direction, sort_by)
 
     query = _limit(query, page_size)
@@ -186,20 +189,25 @@ def _offset(
 
 def _sort_by(query: Select, direction: Optional[str], sort_by: Optional[str]) -> Select:
     """
-    Sorts query by a specific column in ascending or descending order,
-    after verifying that the column exists.
+    Sorts query by a specific column in ascending or descending order.
+    If no sort_by is specified and query has no existing order_by clause,
+    defaults to sorting by 'id' column if it exists.
     """
-    match = False
+    # If query already has ordering, return as is
+    if query._order_by_clauses:
+        return query
+
+    columns = inspect(query).selected_columns
+
+    # If sort_by is specified, try to sort by that column
     if sort_by:
-        sorting_value = None
-        columns = inspect(query).selected_columns
         for item in columns:
             if sort_by == item.key:
-                match = True
-                sorting_value = item
-    if match:
-        if direction == "desc":
-            query = query.order_by(desc(sorting_value))
-        else:
-            query = query.order_by(asc(sorting_value))
+                return query.order_by(desc(item) if direction == "desc" else asc(item))
+
+    # If no sort_by and no existing order_by, try to sort by 'id'
+    for item in columns:
+        if item.key == "id":
+            return query.order_by(asc(item))
+
     return query
