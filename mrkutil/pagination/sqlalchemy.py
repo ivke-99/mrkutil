@@ -75,7 +75,7 @@ def paginate(
         if results and isinstance(results[0], RowMapping):
             results = [dict(k) for k in results]
         else:
-            results = [k.to_dict(recurse=recurse) for k in results]
+            results = [dataclasses.asdict(k) for k in results]
     return {
         "items": results,
         "page": page_number,
