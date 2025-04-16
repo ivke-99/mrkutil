@@ -1,8 +1,12 @@
 import dataclasses
+import logging
 from typing import Optional
 from sqlalchemy import select, func, desc, Select, inspect, asc, RowMapping
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+logger = logging.getLogger(__name__)
 
 
 def paginate(
@@ -187,11 +191,23 @@ def _offset(
     return query
 
 
+def __get_best_sort_column(columns):
+    primary = next((c for c in columns if getattr(c, "primary_key", False)), None)
+    if primary is not None:
+        return primary
+
+    unique = next((c for c in columns if getattr(c, "unique", False)), None)
+    if unique is not None:
+        return unique
+
+    return None
+
+
 def _sort_by(query: Select, direction: Optional[str], sort_by: Optional[str]) -> Select:
     """
     Sorts query by a specific column in ascending or descending order.
     If no sort_by is specified and query has no existing order_by clause,
-    defaults to sorting by 'id' column if it exists.
+    defaults to sorting by primary key/unique column if it exists.
     """
     # If query already has ordering, return as is
     if query._order_by_clauses:
@@ -199,15 +215,28 @@ def _sort_by(query: Select, direction: Optional[str], sort_by: Optional[str]) ->
 
     columns = inspect(query).selected_columns
 
+    unique_column = __get_best_sort_column(columns)
+
     # If sort_by is specified, try to sort by that column
     if sort_by:
         for item in columns:
             if sort_by == item.key:
-                return query.order_by(desc(item) if direction == "desc" else asc(item))
+                query = query.order_by(desc(item) if direction == "desc" else asc(item))
+                if not getattr(item, "unique", False) or not getattr(
+                    item, "primary_key", False
+                ):
+                    if unique_column is not None:
+                        query = query.order_by(unique_column)
+                    else:
+                        logger.warning(
+                            "You selected a non-deterministic column for sorting. Pagination may yield duplicate results."
+                        )
+                return query
 
-    # If no sort_by and no existing order_by, try to sort by 'id'
-    for item in columns:
-        if item.key == "id":
-            return query.order_by(asc(item))
-
+    # If no sort_by and no existing order_by, try to sort by unique column
+    if unique_column is not None:
+        return query.order_by(unique_column)
+    logger.warning(
+        "You are using pagination without a unique column. Pagination may yield inconsistent results."
+    )
     return query
