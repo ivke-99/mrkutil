@@ -2,12 +2,19 @@ import os
 import sys
 from mrkutil.utilities import import_all_subclasses_from_package, register_service_pid
 from mrkutil.communication import listen
+from typing import Callable
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-def __run_service_prod(exchange: str, exchange_type: str, queue: str, max_threads: int):
+def __run_service_prod(
+    exchange: str,
+    exchange_type: str,
+    queue: str,
+    max_threads: int,
+    on_message_processing_complete: Callable = None,
+):
     """
     Service starting point
     """
@@ -20,6 +27,7 @@ def __run_service_prod(exchange: str, exchange_type: str, queue: str, max_thread
             exchange_type=exchange_type,
             queue=queue,
             max_threads=max_threads,
+            on_message_process_complete=on_message_processing_complete,
         )
         sys.exit(0)
     finally:
@@ -27,13 +35,19 @@ def __run_service_prod(exchange: str, exchange_type: str, queue: str, max_thread
 
 
 def __run_service_develop(
-    exchange: str, exchange_type: str, queue: str, max_threads: int
+    exchange: str,
+    exchange_type: str,
+    queue: str,
+    max_threads: int,
+    on_message_processing_complete: Callable = None,
 ):
     """
     Service starting point with watchfiles
     """
     try:
-        __run_service_prod(exchange, exchange_type, queue, max_threads)
+        __run_service_prod(
+            exchange, exchange_type, queue, max_threads, on_message_processing_complete
+        )
     except KeyboardInterrupt:
         logger.info("Detecting changes, reloading..")
 
@@ -44,6 +58,7 @@ def run_service(
     exchange_type: str,
     queue: str,
     max_threads: int,
+    on_message_processing_complete: Callable = None,
     root_package: str = "package",
 ):
     """
@@ -62,7 +77,15 @@ def run_service(
         run_process(
             root_package,
             target=__run_service_develop,
-            args=(exchange, exchange_type, queue, max_threads),
+            args=(
+                exchange,
+                exchange_type,
+                queue,
+                max_threads,
+                on_message_processing_complete,
+            ),
         )
     else:
-        __run_service_prod(exchange, exchange_type, queue, max_threads)
+        __run_service_prod(
+            exchange, exchange_type, queue, max_threads, on_message_processing_complete
+        )
