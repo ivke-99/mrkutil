@@ -1,5 +1,5 @@
 import logging
-import json
+import orjson
 
 
 class JSONFormatter(logging.Formatter):
@@ -26,7 +26,7 @@ class JSONFormatter(logging.Formatter):
         if record.exc_info:
             try:
                 exception = repr(super().formatException(record.exc_info))
-                exception = json.dumps(exception[1:-1])[1:-1]
+                exception = orjson.dumps(exception[1:-1])[1:-1]
             except Exception as e:
                 print(f"error in error {e}")
             record.exc_info = None
@@ -45,7 +45,7 @@ class JSONFormatter(logging.Formatter):
                 record.clientip = record.clientip.split(":")[0]
             if "CUSTOM" in record.msg:
                 record.msg = record.msg.replace("'", '"')
-                msg = json.loads(record.msg[7:])
+                msg = orjson.loads(record.msg[7:])
                 record.user_id = msg["user_id"]
                 record.url = msg["url"]
                 record.http_method = msg["http_method"]

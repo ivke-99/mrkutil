@@ -9,8 +9,6 @@ def paginate(
     sort_by: str = None,
 ):
     """
-    Paginates a MongoDB query result.
-
     Args:
         query: The MongoDB query.
         page_number (int, optional): The page number to retrieve. Defaults to None.

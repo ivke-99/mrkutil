@@ -6,8 +6,14 @@ import importlib
 import pkgutil
 import os
 import sys
+from typing import TypedDict
 
 logger = logging.getLogger(__name__)
+
+
+class RequestData(TypedDict):
+    method: str
+    request: dict
 
 
 def random_string(length):
