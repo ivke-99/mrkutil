@@ -52,7 +52,12 @@ class ServiceResponse:
     }
 
     def __new__(
-        cls, code: int, message=None, errors: list = None, avoid_empty: bool = False
+        cls,
+        code: int,
+        message=None,
+        errors: list = None,
+        params: dict = None,
+        avoid_empty: bool = False,
     ):
         """
         Initializes a new instance of the ResponseHelper class.
@@ -71,6 +76,8 @@ class ServiceResponse:
         if not avoid_empty and not message:
             new_message = cls.RESPONSES.get(str(code), "Default message")
         data = {"code": code, "response": {"message": new_message}}
+        if params:
+            data["response"]["params"] = params
         if errors:
             data["response"]["errors"] = errors
         if not isinstance(new_message, str):
