@@ -55,12 +55,6 @@ def paginate(
 
     query = _limit(query, page_size)
 
-    # cast to int if params are str
-    if isinstance(page_number, str):
-        page_number = int(page_number)
-    if isinstance(page_size, str):
-        page_size = int(page_size)
-
     # Page size defaults to total results
     if page_size is None or (page_size > total_results and total_results > 0):
         page_size = total_results
@@ -134,12 +128,6 @@ async def apaginate(
     query = _sort_by(query, direction, sort_by)
 
     query = _limit(query, page_size)
-
-    # cast to int if params are str
-    if isinstance(page_number, str):
-        page_number = int(page_number)
-    if isinstance(page_size, str):
-        page_size = int(page_size)
 
     # Page size defaults to total results
     if page_size is None or (page_size > total_results and total_results > 0):

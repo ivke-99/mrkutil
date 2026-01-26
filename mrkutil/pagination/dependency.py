@@ -1,3 +1,8 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 def pagination_params(
     page: int | None = None,
     size: int = 10,
@@ -19,9 +24,12 @@ def pagination_params(
 
     """
     if not page or page <= 0:
+        logger.warning("Page is less than or equal to 0, setting to 1")
         page = 1
     if size <= 0:
+        logger.warning("Size is less than or equal to 0, setting to 10")
         size = 10
     if size > 100:
+        logger.warning("Size is greater than 100, setting to 100")
         size = 100
     return {"page": page, "size": size, "direction": direction, "sort_by": sort_by}
